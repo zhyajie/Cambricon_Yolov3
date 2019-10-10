@@ -61,7 +61,7 @@ int start;
 
 #define PRE_READ
 
-DEFINE_string(offlinemodel, "yolov3_cat0915_60000.cambricon", "prototxt file used to find net configuration");
+DEFINE_string(offlinemodel, "1007/yolov3_cat1007_2048_50000_fix8.cambricon", "prototxt file used to find net configuration");
 DEFINE_string(meanfile, "", "file provides mean value(s) of image input.");
 DEFINE_string(meanvalue, "",
               "mean value of input image. "
@@ -900,9 +900,9 @@ void DataProvider::preRead()
     string file = imageList.front();
 
     //改动在preread 线程进行切图
-    int div_shift = 1024;
-    int div_height = 1024;
-    int div_width = 1024;
+    int div_shift = 2048;
+    int div_height = 2048;
+    int div_width = 2048;
     vector<string> imageList_new_uint8;
     //imageNameVec.push_back(file);
     imageList.pop();
@@ -1545,7 +1545,7 @@ void PostProcessor::run()
         }
         if(file_name.find("div")!=string::npos)
         {
-          imgs_size.push_back(1024);
+          imgs_size.push_back(2048);
         }
       }
     }
@@ -1688,89 +1688,16 @@ int main(int argc, char *argv[])
     std::string file_list_ori;
     file_list_ori=imageList_new[i].substr(0,imageList_new[i].length()-4)+"ori.png";
     imageList_new_uint8.push_back(file_list_ori);
-    for(int m=0;m<4;m++)
+    //divTo 2X2 images
+    for(int m=0;m<2;m++)
     {
-      for(int n=0;n<4;n++)
+      for(int n=0;n<2;n++)
       {
         std::string file_list_div = imageList_new[i].substr(0, imageList_new[i].length() - 4) + "_" + std::to_string(m) + "-" + std::to_string(n) + "div.png";
         imageList_new_uint8.push_back(file_list_div);
       }
     }
   }
-
-
-  // //get image file lists
-  // vector<string> files;
-  // std::string line_tmp;
-  // vector<string> imageList_new;
-  // if (files_tmp.fail())
-  // {
-  //   LOG(ERROR) << "open " << FLAGS_images << " file fail!";
-  //   return 1;
-  // }
-  // else
-  // {
-  //   while (getline(files_tmp, line_tmp))
-  //   {
-  //     imageList_new.push_back(line_tmp);
-  //   }
-  // }
-  // files_tmp.close();
-
-  // //切图
-  // int div_shift = 1024;
-  // int div_height = 1024;
-  // int div_width = 1024;
-  // vector<string> imageList_new_uint8;
-  // for (int e = 0; e < imageList_new.size(); e++)
-  // {
-  //   cv::Mat img16 = cv::imread(imageList_new[e], CV_LOAD_IMAGE_UNCHANGED);
-  //   cv::Mat img8 = cv::Mat::zeros(img16.rows, img16.cols, CV_8UC1);
-  //   double minVal, maxVal;
-  //   minMaxIdx(img16, &minVal, &maxVal);
-  //   int total = maxVal - minVal;
-  //   for (int i = 0; i < img16.rows; ++i)
-
-  //   {
-  //     unsigned short *p = img16.ptr<unsigned short>(i); //获取第i行第一个像素的指针
-  //     unsigned char *q = img8.ptr<unsigned char>(i);
-  //     for (int j = 0; j < img16.cols; ++j)
-  //     {
-  //       q[j] = (int)(255 * (p[j] - minVal) / (maxVal - minVal));
-  //     }
-  //   }
-  //   std::string imageList_new_uint8_tmp = imageList_new[e].substr(0, imageList_new[e].length() - 3) + "png"; //new filename is "names.tif"->"names.png"
-  //   imageList_new_uint8.push_back(imageList_new_uint8_tmp);
-  //   cv::imwrite(imageList_new_uint8_tmp.c_str(), img8);
-  //   for (int ii = 0;; ii++)
-  //   {
-  //     int dy = ii * div_shift;
-  //     if (dy >= (img8.rows - (div_height - div_shift)))
-  //       break;
-  //     dy = dy < (img8.rows - div_height) ? dy : (img8.rows - div_height);
-  //     for (int jj = 0;; jj++)
-  //     {
-  //       int dx = jj * div_shift;
-  //       if (dx >= (img8.cols - (div_width - div_shift)))
-  //         break;
-  //       dx = dx < (img8.cols - div_width) ? dx : (img8.cols - div_width);
-  //       cv::Mat crop = img8(cv::Range(dy, dy + div_height), cv::Range(dx, dx + div_width));
-  //       std::string sava_tmp = imageList_new[e].substr(0, imageList_new[e].length() - 4) + "_" + std::to_string(ii) + "-" + std::to_string(jj) + ".png";
-  //       cv::imwrite(sava_tmp.c_str(), crop);
-  //       imageList_new_uint8.push_back(sava_tmp);
-  //     }
-  //   }
-  // }
-
-  // int imageNum = 0;
-  // vector<queue<string>> imageList(totalThreads);
-  // for (int i = 0; i < imageList_new_uint8.size(); i++)
-  // {
-  //   imageList[imageNum % totalThreads].push(imageList_new_uint8[i]);
-  //   std::cout << i << "：  " << imageList_new_uint8[i] << std::endl;
-  //   imageNum++;
-  // }
-  // std::cout << "there are " << imageNum << " figures in " << std::endl;
   cnrtInit(0);
   vector<thread *> stageThreads;
   vector<Pipeline *> pipelineVector;
@@ -1799,9 +1726,9 @@ int main(int argc, char *argv[])
   }
 
    //整合大图
-  int div_shift = 1024;
-  int div_height = 1024;
-  int div_width = 1024;
+  int div_shift = 2048;
+  int div_height = 2048;
+  int div_width = 2048;
 
   std::ofstream file_result("result.txt");
   for (int e = 0; e < imageList_new.size(); e++)
@@ -1815,7 +1742,7 @@ int main(int argc, char *argv[])
     //std::cout << "imread success" << std::endl;
     vector<vector<string>> whole_info;
 
-    std::string name = imageList_new_uint8[17 * e];
+    std::string name = imageList_new_uint8[5 * e];
     int positionMap = name.rfind("/");
     if (positionMap > 0 && positionMap < name.size())
     {
@@ -1859,8 +1786,8 @@ int main(int argc, char *argv[])
         info1_D.push_back(info_tmp);
       }
       //std::cout <<std::endl;
-      if((info1_D[0].find("bridge")!=string::npos) | (info1_D[0].find("harbor")!=string::npos))//
-      	info.push_back(info1_D);
+      if((info1_D[0].find("bridge")!=string::npos) | (info1_D[0].find("harbor")!=string::npos)|(info1_D[0].find("ship")!=string::npos)|(info1_D[0].find("playground")!=string::npos))//
+        info.push_back(info1_D);
     }
     infile.close();
     //std::cout << "txt to vector success" << std::endl;
@@ -1875,12 +1802,12 @@ int main(int argc, char *argv[])
       whole_info_line_id++;
     }
 
-    for (int i_row = 0; i_row < 4; i_row++)
+    for (int i_row = 0; i_row < 2; i_row++)
     {
-      for (int i_col = 0; i_col < 4; i_col++)
+      for (int i_col = 0; i_col < 2; i_col++)
       {
 
-        name = imageList_new_uint8[17 * e + (i_row * 4) + i_col + 1];
+        name = imageList_new_uint8[5 * e + (i_row * 2) + i_col + 1];
         positionMap = name.rfind("/");
         if (positionMap > 0 && positionMap < name.size())
         {
@@ -1917,7 +1844,7 @@ int main(int argc, char *argv[])
             //std::cout <<info_tmp<< " ";
             info_div1_D.push_back(info_tmp);
           }
-          if(info_div1_D[0].find("harbor")==string::npos)
+          if((info_div1_D[0].find("storage-tank")!=string::npos)|(info_div1_D[0].find("plane")!=string::npos))
           info_div.push_back(info_div1_D);
          // std::cout <<std::endl;
         }
