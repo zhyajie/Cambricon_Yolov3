@@ -61,7 +61,7 @@ int start;
 
 #define PRE_READ
 
-DEFINE_string(offlinemodel, "1007/yolov3_cat1007_2048_50000_fix8.cambricon", "prototxt file used to find net configuration");
+DEFINE_string(offlinemodel, "1007/yolov3_cat1007_2048_50000.cambricon", "prototxt file used to find net configuration");
 DEFINE_string(meanfile, "", "file provides mean value(s) of image input.");
 DEFINE_string(meanvalue, "",
               "mean value of input image. "
@@ -70,7 +70,7 @@ DEFINE_string(meanvalue, "",
 DEFINE_string(mludevice, "0",
               "set using mlu device id, set multidevice seperated by ','"
               "eg 0,1 when you use device id is 0 and 1, default: 0");
-DEFINE_int32(dataparallel, 4,
+DEFINE_int32(dataparallel, 8,
              "dataparallel, data * model parallel should "
              "be lower than or equal to 32 ");
 DEFINE_int32(threads, 4, "thread number");
@@ -908,9 +908,9 @@ void DataProvider::preRead()
     imageList.pop();
     if (file.find(" ") != string::npos)
       file = file.substr(0, file.find(" "));
-    std::cout<<file<<std::endl;
+    //std::cout<<file<<std::endl;
     cv::Mat img16 = cv::imread(file, CV_LOAD_IMAGE_UNCHANGED);
-    std::cout<<"img16.rows:"<<img16.rows<<"  img16.cols: "<<img16.cols<<std::endl;
+    //std::cout<<"img16.rows:"<<img16.rows<<"  img16.cols: "<<img16.cols<<std::endl;
     cv::Mat img8 = cv::Mat::zeros(img16.rows, img16.cols, CV_8UC1);
     double minVal, maxVal;
     minMaxIdx(img16, &minVal, &maxVal);
@@ -1618,9 +1618,7 @@ void Pipeline::run()
 int main(int argc, char *argv[])
 {
 
-    float execTime;
-  struct timeval tpend, tpstart;
-  gettimeofday(&tpstart, NULL);
+    
   {
     const char *env = getenv("log_prefix");
     if (!env || strcmp(env, "true") != 0)
@@ -1713,7 +1711,9 @@ int main(int argc, char *argv[])
     }
   }
 
-
+  float execTime;
+  struct timeval tpend, tpstart;
+  gettimeofday(&tpstart, NULL);
   {
     std::lock_guard<std::mutex> lk(condition_m);
     LOG(INFO) << "Notify to start ...";
